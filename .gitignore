@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Build outputs
+dist/
+backend/dist/
+.output/
+.vinxi/
+.nitro/
+
+# Environment variables — never commit real secrets
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Editor / OS
+.DS_Store
+*.local
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+*.bak
+
+# pnpm
+.pnpm-store/
