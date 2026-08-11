@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
-import { getPremiumStatus } from "@/lib/api-client";
+import { useAuth } from "@clerk/tanstack-start";
+import { getPremiumStatus } from "@/lib/api.functions";
 
 export type PlanTier = "free" | "premium" | "pro";
 

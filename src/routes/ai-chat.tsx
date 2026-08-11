@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Send, Loader2, Trash2, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
-import { aiChatAssist } from "@/lib/api-client";
+import { useAuth } from "@clerk/tanstack-start";
+import { aiChatAssist } from "@/lib/api.functions";
 import { usePremium } from "@/hooks/usePremium";
 
 export const Route = createFileRoute("/ai-chat")({

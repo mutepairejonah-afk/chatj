@@ -4,7 +4,7 @@ import {
   Search, Check, X, ExternalLink, Loader2, AlertCircle,
   RefreshCw, Clock, CheckCircle2, XCircle, Settings2, ChevronDown,
 } from "lucide-react";
-import { getAdminPayments, verifyOrder, updateEcoCashSettings, getEcoCashSettings } from "@/lib/api-client";
+import { getAdminPayments, verifyOrder, updateEcoCashSettings, getEcoCashSettings } from "@/lib/api.functions";
 
 interface AdminPaymentsViewProps {
   clerkUserId: string;

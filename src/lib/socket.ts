@@ -1,25 +1,18 @@
 import { io, type Socket } from "socket.io-client";
 
-// Resolve backend URL — falls back to same origin so the existing
-// TanStack Start SSR setup keeps working in dev without VITE_API_URL.
-const SOCKET_URL = (import.meta.env?.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
-
 let socket: Socket | null = null;
 let currentUserId: string | null = null;
 
 /**
  * Returns a singleton Socket.io client, lazily connecting on first use.
  * Re-auths if the userId changes.
- *
- * When VITE_API_URL is set the socket connects to the remote backend;
- * otherwise it connects to the same origin (legacy / monolith mode).
  */
 export function getSocket(clerkUserId: string | null | undefined): Socket | null {
   if (typeof window === "undefined") return null; // SSR no-op
   if (!clerkUserId) return null;
 
   if (!socket) {
-    socket = io(SOCKET_URL || undefined!, {
+    socket = io({
       path: "/socket.io",
       transports: ["websocket", "polling"],
       autoConnect: true,

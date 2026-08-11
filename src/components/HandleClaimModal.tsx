@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { AtSign, Loader2, Check, X, Sparkles } from "lucide-react";
-import { checkUsernameAvailability, claimUsername } from "@/lib/api-client";
+import { checkUsernameAvailability, claimUsername } from "@/lib/api.functions";
 
 const HANDLE_RE = /^[a-zA-Z0-9_]{3,30}$/;
 

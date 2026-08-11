@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MicOff, Volume2, VolumeX, Sparkles, Phone } from "lucide-react";
-import { aiChatAssist } from "@/lib/api-client";
-import { useAuth } from "@clerk/clerk-react";
+import { aiChatAssist } from "@/lib/api.functions";
+import { useAuth } from "@clerk/tanstack-start";
 
 type Message = { role: "user" | "ai"; text: string };
 
@@ -62,11 +62,7 @@ export function AICallModal({ open, onClose }: AICallModalProps) {
 
   const stopAll = useCallback(() => {
     if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch {
-        // Speech recognition may already be stopped.
-      }
+      try { recognitionRef.current.abort(); } catch {}
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -161,11 +157,7 @@ export function AICallModal({ open, onClose }: AICallModalProps) {
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {
-        // Speech recognition may already be stopped.
-      }
+      try { recognitionRef.current.stop(); } catch {}
     }
   }, []);
 

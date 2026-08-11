@@ -162,9 +162,7 @@ export class PeerConnection {
     for (const c of this.pendingIceCandidates) {
       try {
         await this.pc.addIceCandidate(new RTCIceCandidate(c));
-      } catch {
-        // The candidate may already have been rejected or applied.
-      }
+      } catch {}
     }
     this.pendingIceCandidates = [];
   }
@@ -223,11 +221,7 @@ export class PeerConnection {
   /** Stop all tracks and close the peer connection */
   destroy(): void {
     this.pc.getSenders().forEach((s) => {
-      try {
-        s.track?.stop();
-      } catch {
-        // Track cleanup is best-effort during connection teardown.
-      }
+      try { s.track?.stop(); } catch {}
     });
     this.pc.close();
     this.localStream?.getTracks().forEach((t) => t.stop());

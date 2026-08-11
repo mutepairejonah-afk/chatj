@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/tanstack-start";
 import {
   Settings, ChevronRight, Shield, Bell, Moon, Sun, Lock, UserCircle,
   QrCode, Star, HelpCircle, Info, LogOut, X, Download, Copy, Check,
@@ -7,9 +7,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { QRCodeSVG } from "qrcode.react";
-import { getOrCreateProfile, getNotificationCount, getStoryHighlights, getIsAdmin, getStories, createStoryHighlight } from "@/lib/api-client";
+import { getOrCreateProfile, getNotificationCount, getStoryHighlights, getIsAdmin, getStories, createStoryHighlight } from "@/lib/api.functions";
 import { Plus } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 import { SetupPin, AppLockScreen } from "@/components/AppLock";
@@ -329,7 +329,7 @@ function MePage() {
         </motion.div>
 
         {/* Story Highlights */}
-        {(
+        {true && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}

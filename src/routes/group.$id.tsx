@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProfilePreview } from "@/components/ProfilePreview";
 import {
@@ -22,7 +22,7 @@ import {
   leaveGroup,
   getConversationMedia,
   reportTarget,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 export const Route = createFileRoute("/group/$id")({
   component: GroupInfoPage,

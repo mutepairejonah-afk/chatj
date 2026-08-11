@@ -1,10 +1,11 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/tanstack-start";
 import appCss from "../styles.css?url";
 import { MobileLayout } from "../components/MobileLayout";
 import { useEffect } from "react";
 import { initTheme } from "@/hooks/useTheme";
-import { MessageCircle } from "lucide-react";
+
+
 
 function NotFoundComponent() {
   return (
@@ -72,73 +73,6 @@ function parseEnvKey(raw: string | undefined): string {
   return eq !== -1 ? raw.slice(eq + 1) : raw;
 }
 
-// ── Splash screen shown while Clerk initialises ───────────────────────────────
-// Renders branded skeleton rows that look exactly like the chat list so the
-// transition to real content feels seamless (no layout shift).
-function SplashScreen() {
-  return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      {/* Fake header */}
-      <div className="flex items-center justify-between px-4 pb-2 pt-[max(env(safe-area-inset-top),12px)]">
-        <div className="h-7 w-20 rounded-lg bg-secondary animate-pulse" />
-        <div className="flex gap-2">
-          <div className="h-8 w-8 rounded-full bg-secondary animate-pulse" />
-          <div className="h-8 w-8 rounded-full bg-secondary animate-pulse" />
-        </div>
-      </div>
-
-      {/* Fake search bar */}
-      <div className="px-4 pb-3">
-        <div className="h-10 w-full rounded-xl bg-secondary animate-pulse" />
-      </div>
-
-      {/* Fake chat rows */}
-      <div className="flex-1 space-y-0">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-3">
-            <div
-              className="h-12 w-12 shrink-0 rounded-full bg-secondary animate-pulse"
-              style={{ animationDelay: `${i * 40}ms` }}
-            />
-            <div className="flex-1 space-y-2">
-              <div className="flex justify-between">
-                <div
-                  className="h-4 rounded bg-secondary animate-pulse"
-                  style={{ width: `${90 + (i % 3) * 30}px`, animationDelay: `${i * 40}ms` }}
-                />
-                <div
-                  className="h-3 w-10 rounded bg-secondary animate-pulse"
-                  style={{ animationDelay: `${i * 40 + 20}ms` }}
-                />
-              </div>
-              <div
-                className="h-3 rounded bg-secondary animate-pulse"
-                style={{ width: `${120 + (i % 4) * 25}px`, animationDelay: `${i * 40 + 10}ms` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Centred logo (appears after a short delay so it's not jarring on fast loads) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-0 animate-[fadeIn_0.3s_0.4s_forwards]">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 shadow-xl ring-1 ring-primary/20">
-          <MessageCircle size={38} className="text-primary" />
-        </div>
-        <p className="mt-4 text-lg font-bold text-foreground">ChatApp</p>
-        <p className="mt-1 text-sm text-muted-foreground">Loading…</p>
-      </div>
-    </div>
-  );
-}
-
-// Must be a direct child of <ClerkProvider> so it can call useAuth()
-function AuthLoadGuard({ children }: { children: React.ReactNode }) {
-  const { isLoaded } = useAuth();
-  if (!isLoaded) return <SplashScreen />;
-  return <>{children}</>;
-}
-
 function RootComponent() {
   useEffect(() => {
     initTheme();
@@ -148,11 +82,9 @@ function RootComponent() {
 
   return (
     <ClerkProvider publishableKey={clerkKey}>
-      <AuthLoadGuard>
-        <MobileLayout>
-          <Outlet />
-        </MobileLayout>
-      </AuthLoadGuard>
+      <MobileLayout>
+        <Outlet />
+      </MobileLayout>
     </ClerkProvider>
   );
 }

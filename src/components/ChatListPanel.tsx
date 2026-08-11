@@ -1,12 +1,12 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Search, Plus, Pin, Camera, Users, Sparkles, BadgeCheck, X, MessageSquare, Phone, Video, Archive, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@clerk/tanstack-start";
+import { getConversations, getOrCreateProfile } from "@/lib/api.functions";
 import { relativeTime } from "@/lib/mock-data";
 import { getSocket } from "@/lib/socket";
 import { ProfilePreview } from "@/components/ProfilePreview";
-import { useConversations } from "@/hooks/useConversations";
 
 /** Returns true only if the user is genuinely online */
 function isActuallyOnline(contact: any): boolean {
@@ -46,17 +46,11 @@ export function ChatListPanel({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const { userId } = useAuth();
-  const { user } = useUser();
   const navigate = useNavigate();
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [previewTarget, setPreviewTarget] = useState<any>(null);
   const location = useLocation();
-
-  // Offline-first conversation list (reads Dexie cache instantly, syncs in background)
-  const { conversations, isLoading: loading, refresh } = useConversations(
-    userId,
-    user?.fullName,
-    user?.imageUrl
-  );
 
   // Live typing indicators: convId → { name, timer }
   const [typingMap, setTypingMap] = useState<Record<string, string>>({});
@@ -68,6 +62,24 @@ export function ChatListPanel({
   // In-app toast for incoming messages
   const [toast, setToast] = useState<{ id: string; name: string; text: string; avatar: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const loadConversations = useCallback(async () => {
+    if (!userId) return;
+    try {
+      await getOrCreateProfile({ data: { clerkUserId: userId } });
+      const convs = await getConversations({ data: { clerkUserId: userId } });
+      setConversations(convs);
+    } catch (err) {
+      console.error("Failed to load conversations:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    loadConversations();
+  }, [userId, loadConversations]);
 
   // Request notification permission on mount
   useEffect(() => {
@@ -83,32 +95,34 @@ export function ChatListPanel({
     if (!socket) return;
 
     const onNewMessage = (data: any) => {
-      // Refresh conversation list from server (updates Dexie cache → re-renders)
-      refresh();
+      // Update chat list
+      loadConversations();
 
       // Show in-app toast if message is from someone else
       const msg = data.message;
       if (msg && msg.sender_clerk_id && msg.sender_clerk_id !== userId) {
         const convId = data.conversationId;
-        // Find the conversation to get the name (conversations comes from Dexie)
-        const conv = conversations.find((c: any) => c.id === convId);
-        if (conv) {
-          const contact = conv.memberProfiles?.[0] || {};
-          const name = conv.type === "group"
-            ? (conv.name || "Group")
-            : (contact.display_name || "Someone");
-          const avatar = conv.type === "group"
-            ? (conv.avatar_url || "")
-            : (contact.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${msg.sender_clerk_id}`);
-          const text = msg.text || (msg.image_url ? "📷 Photo" : msg.audio_url ? "🎤 Voice" : "New message");
+        // Find the conversation to get the name
+        setConversations((prev) => {
+          const conv = prev.find((c) => c.id === convId);
+          if (conv) {
+            const name = conv.type === "group"
+              ? (conv.name || "Group")
+              : (conv.contact?.display_name || "Someone");
+            const avatar = conv.type === "group"
+              ? (conv.avatar_url || "")
+              : (conv.contact?.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${msg.sender_clerk_id}`);
+            const text = msg.text || (msg.image_url ? "📷 Photo" : msg.audio_url ? "🎤 Voice" : "New message");
 
-          setToast({ id: convId, name, text, avatar });
-          if (toastTimer.current) clearTimeout(toastTimer.current);
-          toastTimer.current = setTimeout(() => setToast(null), 4500);
+            setToast({ id: convId, name, text, avatar });
+            if (toastTimer.current) clearTimeout(toastTimer.current);
+            toastTimer.current = setTimeout(() => setToast(null), 4500);
 
-          // Also fire browser notification
-          fireBrowserNotification(name, text, avatar || undefined);
-        }
+            // Also fire browser notification
+            fireBrowserNotification(name, text, avatar || undefined);
+          }
+          return prev;
+        });
       }
     };
 
@@ -145,7 +159,7 @@ export function ChatListPanel({
       socket.off("typing:stop", onTypingStop);
       socket.off("presence:update", onPresence);
     };
-  }, [userId, refresh, conversations]);
+  }, [userId, loadConversations]);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -155,23 +169,18 @@ export function ChatListPanel({
     };
   }, []);
 
-  // conversations is LocalConversation[] from Dexie (offline-first).
-  // contact = memberProfiles[0] — same data the API puts in c.contact.
   const displayChats = conversations.map((c: any) => {
     const isGroup = c.type === "group";
-    // For DMs: other user is memberProfiles[0]. For groups: first member.
-    const contact = c.memberProfiles?.[0] || {};
+    const contact = c.contact || {};
     const contactClerkId = contact.clerk_user_id || null;
     // Merge DB online status with live socket presence
     const liveOnline = contactClerkId ? onlineMap[contactClerkId] : undefined;
     const isOnline = !isGroup && (liveOnline !== undefined ? liveOnline : isActuallyOnline(contact));
-    // lastMessageText / lastMessageAt are the denormalized fields stored in Dexie.
-    const hasLastMsg = c.lastMessageText || c.lastMessageAt;
     return {
       id: c.id,
       isGroup,
       groupAvatarUrl: c.avatar_url || null,
-      groupDescription: null, // not stored locally — available after first sync
+      groupDescription: c.description || null,
       contact: {
         clerkUserId: contactClerkId,
         username: contact.username || null,
@@ -186,17 +195,23 @@ export function ChatListPanel({
         isPremium: ["premium", "pro"].includes(contact.subscription_tier || "") || contact.is_admin,
       },
       memberProfiles: c.memberProfiles || [],
-      memberCount: (c.memberProfiles || []).length,
-      lastMessage: hasLastMsg
+      memberCount: c.memberCount || 0,
+      lastMessage: c.lastMessage
         ? {
-            text: c.lastMessageText || "",
-            timestamp: new Date(c.lastMessageAt || c.updated_at),
-            senderId: c.lastMessageSenderId || null,
+            text: c.lastMessage.text || (
+              c.lastMessage.image_url ? "📷 Photo" :
+              c.lastMessage.video_url ? "🎥 Video" :
+              c.lastMessage.audio_url ? "🎤 Voice message" :
+              c.lastMessage.file_name ? `📎 ${c.lastMessage.file_name}` :
+              c.lastMessage.poll_id ? "📊 Poll" : ""
+            ),
+            timestamp: new Date(c.lastMessage.created_at),
+            senderId: c.lastMessage.sender_clerk_id,
           }
         : undefined,
       unreadCount: c.unreadCount || 0,
       isPinned: c.isPinned || false,
-      isMuted: c.isMuted || false,
+      isMuted: c.mute_until && new Date(c.mute_until) > new Date(),
     };
   });
 

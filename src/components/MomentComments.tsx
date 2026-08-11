@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Send, Loader2, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getMomentComments, addMomentComment, deleteMomentComment } from "@/lib/api-client";
+import { getMomentComments, addMomentComment, deleteMomentComment } from "@/lib/api.functions";
 import { relativeTime } from "@/lib/mock-data";
 
 interface MomentCommentsProps {

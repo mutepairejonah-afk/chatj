@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { Plus, X, Image as ImageIcon, Type, Loader2, Trash2, Eye, Send, ChevronDown, Video } from "lucide-react";
 import {
   getStories, createStory, uploadStoryMedia, markStoryViewed, deleteStory,
   getStoryViewers, getStoryViewCounts, getOrCreateDirectConversation, sendMessage,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 import { getSocket } from "@/lib/socket";
 

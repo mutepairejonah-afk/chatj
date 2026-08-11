@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { Search, Users, X, ArrowLeft, Check, QrCode, Camera, AtSign, UserPlus, Trash2, MessageCircle, Bell, Clock, BadgeCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import {
   getContacts,
   addContact,
@@ -16,7 +16,7 @@ import {
   createGroup,
   getNotificationCount,
   getFriendSuggestions,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 export const Route = createFileRoute("/contacts")({
   component: ContactsPage,
@@ -695,7 +695,7 @@ function ContactsPage() {
             reader.onerror = reject;
             reader.readAsDataURL(groupAvatarFile);
           });
-          const { uploadGroupAvatar } = await import("@/lib/api-client");
+          const { uploadGroupAvatar } = await import("@/lib/api.functions");
           await uploadGroupAvatar({
             data: {
               clerkUserId: userId,

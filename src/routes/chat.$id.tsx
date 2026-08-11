@@ -2,9 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Phone, Video, Send, Image, Smile, Mic, X, Loader2, Play, Pause, UserPlus, UserMinus, Settings, LogOut, Pencil, Check, Trash2, Reply, Search, Forward, CornerUpLeft, Paperclip, FileText, MapPin, User as UserIcon, BarChart3, Pin, Star, ShieldOff, ShieldAlert, Plus, Download, Globe, Brain, Palette, Sparkles, Copy, BadgeCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
-import { useAuth } from "@clerk/clerk-react";
-import { useMessages } from "@/hooks/useMessages";
-import { getMessages, sendMessage as sendMessageFn, addReaction as addReactionFn, markConversationRead, uploadChatMedia, getConversationDetails, addGroupMember, removeGroupMember, getAllProfiles, markMessagesRead, getReadReceipts, leaveGroup, editMessage as editMessageFn, deleteMessageForEveryone as deleteMessageFn, getConversations, togglePinMessage, getPinnedMessages, toggleStarMessage, blockUser, reportTarget, uploadDocumentMessage, sendLocationMessage, sendContactMessage, createPoll, getPoll, votePoll, aiChatAssist, translateMessage, getConversationWallpaper, setConversationWallpaper, exportChatHistory } from "@/lib/api-client";
+import { useAuth } from "@clerk/tanstack-start";
+import { getMessages, sendMessage as sendMessageFn, addReaction as addReactionFn, markConversationRead, uploadChatMedia, getConversationDetails, addGroupMember, removeGroupMember, getAllProfiles, markMessagesRead, getReadReceipts, leaveGroup, editMessage as editMessageFn, deleteMessageForEveryone as deleteMessageFn, getConversations, togglePinMessage, getPinnedMessages, toggleStarMessage, blockUser, reportTarget, uploadDocumentMessage, sendLocationMessage, sendContactMessage, createPoll, getPoll, votePoll, aiChatAssist, translateMessage, getConversationWallpaper, setConversationWallpaper, exportChatHistory } from "@/lib/api.functions";
 import { usePremium } from "@/hooks/usePremium";
 import { messageTime, type Message } from "@/lib/mock-data";
 import { getSocket } from "@/lib/socket";
@@ -203,22 +202,6 @@ function ChatDetailPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Dexie message persistence (write-side only) ───────────────────────────
-  // The API fetch below drives the displayed `messages` state; Dexie is used
-  // purely for write-side persistence so messages are available for offline
-  // reading in future sessions. It does NOT replace the API as the display
-  // source in this component.
-  //   • addOptimistic    — write a pending entry to Dexie on send (shown inline)
-  //   • confirmOptimistic— overwrite with server-confirmed record on success
-  //   • removePending    — remove a failed entry so it never stays stuck
-  //   • upsertIncoming   — persist socket-pushed messages for offline reading
-  const {
-    addOptimistic,
-    confirmOptimistic,
-    removePending,
-    upsertIncoming,
-  } = useMessages(id, userId);
-
   // Kept in sync with convDetails so socket handlers set up in effects that
   // only run once (deps: [id, userId]) always see the latest value instead
   // of a stale closure from the first render (when convDetails is still null).
@@ -347,8 +330,6 @@ function ChatDetailPage() {
           replyToId: m.reply_to_message_id || null,
         }];
       });
-      // Persist incoming socket message to Dexie cache
-      upsertIncoming(m).catch(() => {});
       // Pre-fetch poll data if poll
       if (m.poll_id) {
         getPoll({ data: { pollId: m.poll_id } }).then((p: any) => {
@@ -763,19 +744,6 @@ function ChatDetailPage() {
     setInput("");
     setReplyTo(null);
 
-    // Write optimistic message to Dexie so it survives a page refresh
-    addOptimistic({
-      id: newMsg.id,
-      conversation_id: id,
-      sender_clerk_id: userId,
-      text,
-      image_url: null, video_url: null, audio_url: null,
-      file_url: null, file_name: null,
-      created_at: newMsg.timestamp.toISOString(),
-      is_deleted: false, is_edited: false, starred_by_me: false,
-      isPending: true, reactions: [],
-    }).catch(() => {});
-
     try {
       const saved = await sendMessageFn({
         data: {
@@ -787,8 +755,6 @@ function ChatDetailPage() {
         setMessages((prev) => prev.map((m) =>
           m.id === newMsg.id ? { ...m, id: saved.id, timestamp: new Date(saved.created_at), replyToId: saved.reply_to_message_id ?? null } : m
         ));
-        // Replace pending Dexie entry with the confirmed server record
-        confirmOptimistic(newMsg.id, saved).catch(() => {});
         // Push to peers via Socket.io — DB has the message persisted, this only fans out live.
         const participantIds = convDetailsRef.current?.members?.map((m: any) => m.clerk_user_id) ?? [];
         getSocket(userId)?.emit("message:sent", {
@@ -831,8 +797,6 @@ function ChatDetailPage() {
       }
     } catch (err) {
       console.error("Failed to send message:", err);
-      // Remove the stuck pending entry from Dexie so it doesn't persist forever
-      removePending(newMsg.id).catch(() => {});
     }
   };
 

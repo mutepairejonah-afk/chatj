@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, Bell, Check, X, Clock, UserPlus, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
@@ -8,7 +8,7 @@ import {
   getOutgoingRequests,
   acceptContactRequest,
   rejectContactRequest,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, Camera, Loader2, Check, X, AtSign, Link as LinkIcon, Plus, Trash2, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getOrCreateProfile, updateProfile, uploadAvatar, claimUsername, checkUsernameAvailability, updatePrivacySettings, updateBioLinks } from "@/lib/api-client";
+import { getOrCreateProfile, updateProfile, uploadAvatar, claimUsername, checkUsernameAvailability, updatePrivacySettings, updateBioLinks } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/edit-profile")({
   component: EditProfilePage,

@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, Shield, ShieldAlert, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { getIsAdmin } from "@/lib/api-client";
+import { getIsAdmin } from "@/lib/api.functions";
 import { AdminPaymentsView } from "@/admin-dashboard/AdminPaymentsView";
 
 export const Route = createFileRoute("/admin-panel")({

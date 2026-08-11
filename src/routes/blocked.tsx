@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, ShieldOff, Loader2 } from "lucide-react";
-import { getBlockedUsers, unblockUser } from "@/lib/api-client";
+import { getBlockedUsers, unblockUser } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/blocked")({
   component: BlockedPage,

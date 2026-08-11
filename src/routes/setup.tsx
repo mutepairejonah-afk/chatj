@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-
-
+import { createServerFn } from "@tanstack/react-start";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { useState } from "react";
 import { Copy, Check, ExternalLink } from "lucide-react";
 
@@ -340,16 +340,45 @@ const ALL_SQL = [
 // A missing-column error is 42703, a missing-table error is 42P01.
 const isMissing = (error: any) => !!error && (error.code === "42703" || error.code === "42P01");
 
-const checkSetupFn = async () => ({
-  usernameApplied: false,
-  friendRequestsApplied: false,
-  messageEditDeleteReplyApplied: false,
-  callsApplied: false,
-  storiesApplied: false,
-  groupFeaturesApplied: false,
-  premiumApplied: false,
-  ecocashApplied: false,
-  pushTokenApplied: false,
+const checkSetupFn = createServerFn({ method: "GET" }).handler(async () => {
+  const checks = await Promise.all([
+    supabaseAdmin.from("profiles").select("username").limit(1),
+    supabaseAdmin.from("contacts").select("status").limit(1),
+    supabaseAdmin.from("messages").select("is_edited, is_deleted, reply_to_message_id").limit(1),
+    supabaseAdmin.from("call_logs").select("id").limit(1),
+    supabaseAdmin.from("stories").select("id").limit(1),
+    supabaseAdmin.from("messages").select("pinned, file_url, poll_id").limit(1),
+    supabaseAdmin.from("starred_messages").select("id").limit(1),
+    supabaseAdmin.from("blocked_users").select("id").limit(1),
+    supabaseAdmin.from("reports").select("id").limit(1),
+    supabaseAdmin.from("polls").select("id").limit(1),
+    supabaseAdmin.from("profiles").select("subscription_tier, verified, bio_links").limit(1),
+    supabaseAdmin.from("story_highlights").select("id").limit(1),
+    supabaseAdmin.from("scheduled_messages").select("id").limit(1),
+    supabaseAdmin.from("conversation_wallpapers").select("clerk_user_id").limit(1),
+    supabaseAdmin.from("profiles").select("is_admin").limit(1),
+    supabaseAdmin.from("payments").select("id").limit(1),
+    supabaseAdmin.from("profiles").select("push_token").limit(1),
+  ]);
+
+  const [
+    username, friendRequests, messageEditDeleteReply, callLogs, stories,
+    messageGroupCols, starredMessages, blockedUsers, reports, polls,
+    premiumCols, storyHighlights, scheduledMessages, wallpapers,
+    isAdminCol, payments, pushToken,
+  ] = checks.map((r) => !isMissing(r.error));
+
+  return {
+    usernameApplied: username,
+    friendRequestsApplied: friendRequests,
+    messageEditDeleteReplyApplied: messageEditDeleteReply,
+    callsApplied: callLogs,
+    storiesApplied: stories,
+    groupFeaturesApplied: messageGroupCols && starredMessages && blockedUsers && reports && polls,
+    premiumApplied: premiumCols && storyHighlights && scheduledMessages && wallpapers,
+    ecocashApplied: isAdminCol && payments,
+    pushTokenApplied: pushToken,
+  };
 });
 
 export const Route = createFileRoute("/setup")({

@@ -2,9 +2,9 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { MessageCircle, Users, Compass, User, Phone } from "lucide-react";
 import { ChatListPanel } from "./ChatListPanel";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/tanstack-start";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { getOrCreateProfile, getNotificationCount, getOrCreateDirectConversation } from "@/lib/api-client";
+import { getOrCreateProfile, getNotificationCount, getOrCreateDirectConversation } from "@/lib/api.functions";
 import { HandleClaimModal } from "./HandleClaimModal";
 import { getSocket } from "@/lib/socket";
 import { registerCallStarter, unregisterCallStarter } from "@/lib/callTrigger";
@@ -52,10 +52,6 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
   const isChat = location.pathname.startsWith("/chat/") || location.pathname === "/ai-chat";
   const isAuthPage = location.pathname === "/login";
   const isPublicProfile = location.pathname.startsWith("/u/");
-  // Full-screen content pages: not a "pick something from this list" flow,
-  // so they shouldn't be squeezed into the narrow list column next to an
-  // empty chat placeholder on desktop.
-  const isFullWidthPage = location.pathname === "/discover";
 
   // Redirect to login if not signed in (public profile pages stay accessible)
   useEffect(() => {
@@ -353,31 +349,6 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
             <ChatListPanel compactActive />
           </aside>
           <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
-        </div>
-        {isSignedIn && needsHandle && userId && (
-          <HandleClaimModal
-            clerkUserId={userId}
-            onClaimed={() => setNeedsHandle(false)}
-          />
-        )}
-        {callLayer}
-      </>
-    );
-  }
-
-  // ─── Full-width content pages (e.g. Discover) ──────────────────────
-  // Mobile: fills the screen with the bottom tab bar, same as any tab.
-  // Desktop: rail + the route filling all remaining width — no narrow
-  // list column, no empty chat placeholder next to it.
-  if (isFullWidthPage) {
-    return (
-      <>
-        <div className="flex h-dvh bg-background">
-          {sideRail}
-          <div className="flex flex-1 min-w-0 flex-col">
-            <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-            {mobileBottomNav}
-          </div>
         </div>
         {isSignedIn && needsHandle && userId && (
           <HandleClaimModal

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { X, MessageCircle, Phone, Video, UserCircle, Info, Users, BadgeCheck } from "lucide-react";
-import { getProfileByClerkId } from "@/lib/api-client";
+import { getProfileByClerkId } from "@/lib/api.functions";
 
 export interface ProfilePreviewProps {
   open: boolean;

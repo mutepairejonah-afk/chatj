@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, Star, Loader2, Image as ImageIcon, Video as VideoIcon, FileText, Mic } from "lucide-react";
-import { getStarredMessages } from "@/lib/api-client";
+import { getStarredMessages } from "@/lib/api.functions";
 import { messageTime } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/starred")({

@@ -2,8 +2,8 @@
 // callAPI / db.ts
 // Server-function wrappers for call log persistence (Supabase).
 //
-// All functions are thin re-exports from the REST API client so
-// consumers can import everything from "callAPI" without touching api-client.
+// All functions are thin re-exports from the main api.functions module so
+// consumers can import everything from "callAPI" without touching api.functions.
 //
 // Database table: call_logs
 //   id                uuid      PK
@@ -22,7 +22,7 @@ export {
   getCallHistory,
   deleteCallLog,
   clearCallHistory,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 /**
  * Helper: format a duration in seconds as "m:ss".

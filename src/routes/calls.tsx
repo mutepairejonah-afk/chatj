@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed, PhoneCall,
   Search, Trash2, X, Loader2, MoreVertical, BadgeCheck, Sparkles,
 } from "lucide-react";
-import { getCallHistory, deleteCallLog, clearCallHistory, getOrCreateDirectConversation } from "@/lib/api-client";
+import { getCallHistory, deleteCallLog, clearCallHistory, getOrCreateDirectConversation } from "@/lib/api.functions";
 import { ProfilePreview } from "@/components/ProfilePreview";
 import { AICallModal } from "@/components/AICallModal";
 

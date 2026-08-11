@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { ArrowLeft, MessageCircle, UserPlus, Loader2, Check, Clock, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import {
   isContact,
   addContact,
   getOrCreateDirectConversation,
-} from "@/lib/api-client";
+} from "@/lib/api.functions";
 
 export const Route = createFileRoute("/u/$handle")({
   component: PublicProfilePage,

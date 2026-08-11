@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { Loader2, Users, ArrowLeft, Check } from "lucide-react";
-import { lookupInvite, joinGroupByInvite } from "@/lib/api-client";
+import { lookupInvite, joinGroupByInvite } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/join/$code")({
   component: JoinGroupPage,

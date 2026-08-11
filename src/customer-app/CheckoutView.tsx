@@ -4,7 +4,7 @@ import {
   Phone, Copy, Check, Upload, X, Loader2, AlertCircle,
   ExternalLink, ChevronDown, CheckCircle2, MessageSquare,
 } from "lucide-react";
-import { getEcoCashSettings, submitPayment, uploadPaymentScreenshot } from "@/lib/api-client";
+import { getEcoCashSettings, submitPayment, uploadPaymentScreenshot } from "@/lib/api.functions";
 
 interface CheckoutViewProps {
   initialAmount?: number;

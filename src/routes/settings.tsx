@@ -22,35 +22,23 @@ function SettingsPage() {
     try {
       const saved = localStorage.getItem("chatapp_notif_settings");
       if (saved) return JSON.parse(saved);
-    } catch {
-      // Ignore malformed or unavailable local storage and use defaults.
-    }
+    } catch {}
     return { messages: true, mentions: true, requests: true, sounds: true, vibrate: true };
   });
   const [chatSettings, setChatSettings] = useState<{ fontSize: FontSize; enterToSend: boolean; mediaAutoDownload: boolean }>(() => {
     try {
       const saved = localStorage.getItem("chatapp_chat_settings");
       if (saved) return JSON.parse(saved);
-    } catch {
-      // Ignore malformed or unavailable local storage and use defaults.
-    }
+    } catch {}
     return { fontSize: "medium" as FontSize, enterToSend: false, mediaAutoDownload: true };
   });
 
   // Persist to localStorage whenever settings change
   useEffect(() => {
-    try {
-      localStorage.setItem("chatapp_notif_settings", JSON.stringify(notifications));
-    } catch {
-      // Persistence is best-effort when storage is unavailable.
-    }
+    try { localStorage.setItem("chatapp_notif_settings", JSON.stringify(notifications)); } catch {}
   }, [notifications]);
   useEffect(() => {
-    try {
-      localStorage.setItem("chatapp_chat_settings", JSON.stringify(chatSettings));
-    } catch {
-      // Persistence is best-effort when storage is unavailable.
-    }
+    try { localStorage.setItem("chatapp_chat_settings", JSON.stringify(chatSettings)); } catch {}
   }, [chatSettings]);
 
   return (

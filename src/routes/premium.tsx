@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-start";
 import { BadgeCheck, ArrowLeft, CheckCircle2, ShieldCheck, Star, Zap, Globe, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
