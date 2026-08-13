@@ -29,11 +29,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname ?? __dirname, "src"),
-      // Mock Node.js modules for browser environment
+      // Force all Node.js module imports to use our mock
       "node:async_hooks": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
       "async_hooks": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
       "node:fs": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
       "node:path": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:os": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:util": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:stream": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:events": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
     },
   },
 
@@ -43,15 +47,23 @@ export default defineConfig({
     // Produce a single-page app — all routes serve index.html
     rollupOptions: {
       input: "index.html",
-      // Externalize Node.js modules that can't be bundled for browser
+      // Externalize these to prevent them from being loaded
       external: (id) => {
-        return id === "node:async_hooks" || id === "async_hooks";
+        return id.includes("node:") || id === "async_hooks";
       },
     },
     // Slightly larger chunk warning threshold for a feature-heavy app
     chunkSizeWarningLimit: 1200,
     commonjsOptions: {
       transformMixedEsModules: true,
+      include: [/node_modules/],
+    },
+    rollupOptions: {
+      input: "index.html",
+      output: {
+        // Ensure all chunks are properly handled
+        manualChunks: undefined,
+      },
     },
   },
 
@@ -77,10 +89,17 @@ export default defineConfig({
   define: {
     "global": "globalThis",
     "process.env": "{}",
+    "process.browser": "true",
+    "process.version": '""',
   },
 
   // Exclude problematic dependencies from optimization
   optimizeDeps: {
-    exclude: ["@tanstack/start-storage-context"],
+    exclude: [
+      "@tanstack/start-storage-context",
+      "node:async_hooks",
+      "async_hooks",
+    ],
+    include: ["react", "react-dom"],
   },
 });
