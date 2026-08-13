@@ -1,40 +1,55 @@
-// src/empty-module.js
-// Mock for Node.js async_hooks in browser environment
+// src/mocks/empty-module.js
+// Complete mock for Node.js modules in browser
 
 export class AsyncLocalStorage {
   constructor() {
-    this.store = undefined;
+    this._store = new Map();
   }
 
   run(store, callback) {
-    const previousStore = this.store;
-    this.store = store;
+    this._store.set('current', store);
     try {
       return callback();
     } finally {
-      this.store = previousStore;
+      this._store.delete('current');
     }
   }
 
   getStore() {
-    return this.store;
+    return this._store.get('current');
   }
 
   disable() {
-    this.store = undefined;
+    this._store.clear();
   }
 
   enterWith(store) {
-    this.store = store;
+    this._store.set('current', store);
   }
 }
 
-// Default export for compatibility
-export default {
-  AsyncLocalStorage,
+// Mock for Clerk's server-side functions
+export const createClerkServerFn = (fn) => {
+  return (args) => {
+    if (typeof window !== 'undefined') {
+      // On client, make API call
+      return fetch('/api/clerk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fn: fn.name, args }),
+      }).then(res => res.json());
+    }
+    return fn(args);
+  };
 };
 
-// Mock other common Node.js modules
+// Default export
+export default {
+  AsyncLocalStorage,
+  createClerkServerFn,
+};
+
+// Mock other exports
 export const createHook = () => ({ enable: () => {}, disable: () => {} });
 export const executionAsyncId = () => 0;
 export const triggerAsyncId = () => 0;
