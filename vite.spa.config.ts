@@ -29,6 +29,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname ?? __dirname, "src"),
+      // Mock Node.js modules for browser environment
+      "node:async_hooks": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "async_hooks": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:fs": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
+      "node:path": path.resolve(import.meta.dirname ?? __dirname, "src/empty-module.js"),
     },
   },
 
@@ -38,9 +43,16 @@ export default defineConfig({
     // Produce a single-page app — all routes serve index.html
     rollupOptions: {
       input: "index.html",
+      // Externalize Node.js modules that can't be bundled for browser
+      external: (id) => {
+        return id === "node:async_hooks" || id === "async_hooks";
+      },
     },
     // Slightly larger chunk warning threshold for a feature-heavy app
     chunkSizeWarningLimit: 1200,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
   },
 
   // When running vite dev for the SPA (not Capacitor live-reload):
@@ -59,5 +71,16 @@ export default defineConfig({
         ws: true,
       },
     },
+  },
+
+  // Define global variables for browser
+  define: {
+    "global": "globalThis",
+    "process.env": "{}",
+  },
+
+  // Exclude problematic dependencies from optimization
+  optimizeDeps: {
+    exclude: ["@tanstack/start-storage-context"],
   },
 });
